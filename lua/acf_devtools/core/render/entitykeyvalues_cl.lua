@@ -27,20 +27,22 @@ function EntityKeyValues.GetPhysObjData(EntIdx, PhysObjIdx)
             Collapsed = false
         }
 
-        EntityData.PhysObjs[EntIdx] = PhysObjData
+        EntityData.PhysObjs[PhysObjIdx] = PhysObjData
     end
 
     return PhysObjData
 end
 
 
-function EntityKeyValues.IsEntityEmpty(EntityObj)
+function EntityKeyValues.IsEntityEmpty(EntityObj, IncludePhysObjs)
     if next(EntityObj.Categories) == nil and next(EntityObj.PhysObjs) == nil then return true end
     for _, CategoryObject in pairs(EntityObj.Categories) do
         if not EntityKeyValues.IsCategoryEmpty(CategoryObject) then return false end
     end
-    for _, PhysObj in pairs(EntityObj.PhysObjs) do
-        if not EntityKeyValues.IsPhysObjEmpty(PhysObj) then return false end
+    if IncludePhysObjs ~= false then
+        for _, PhysObj in pairs(EntityObj.PhysObjs) do
+            if not EntityKeyValues.IsPhysObjEmpty(PhysObj) then return false end
+        end
     end
     return true
 end
@@ -197,11 +199,13 @@ local function RenderEntity(X, Y, Clicked, EntIdx, Ent, EntityData)
     local Pos = Ent:WorldSpaceCenter()
     local ScreenPos = Pos:ToScreen()
 
-    local IsEntityCollapsed = EntityData.Collapsed
-    local W, H = draw.SimpleTextOutlined("[" .. (IsEntityCollapsed and "+" or "-") .. "][Entity #" .. EntIdx .. "]", "ACF_DebugFixedLarge", ScreenPos.x, ScreenPos.y, color_White, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, color_black)
-
-    if Clicked and X >= ScreenPos.x and X <= ScreenPos.x + W and Y >= (ScreenPos.y - (H / 2)) and Y <= (ScreenPos.y + H - (H / 2)) then
-        EntityData.Collapsed = not EntityData.Collapsed
+    local W, H = 0, 0
+    if not EntityKeyValues.IsEntityEmpty(EntityData, false) then
+        local IsEntityCollapsed = EntityData.Collapsed
+        W, H = draw.SimpleTextOutlined("[" .. (IsEntityCollapsed and "+" or "-") .. "][Entity #" .. EntIdx .. "]", "ACF_DebugFixedLarge", ScreenPos.x, ScreenPos.y, color_White, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, color_black)
+        if Clicked and X >= ScreenPos.x and X <= ScreenPos.x + W and Y >= (ScreenPos.y - (H / 2)) and Y <= (ScreenPos.y + H - (H / 2)) then
+            EntityData.Collapsed = not EntityData.Collapsed
+        end
     end
 
     local OffsetY = 20
