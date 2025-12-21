@@ -184,7 +184,7 @@ local function RenderPhysObj(X, Y, Clicked, EntIdx, Ent, PhysObjIdx, PhysObjData
             end
             OffsetY = OffsetY + 24
             if not IsCategoryCollapsed then
-                for Key, Value in EntityKeyValues.IterateEntityCategoryData(Category) do
+                for Key, Value in EntityKeyValues.IteratePhysObjCategoryData(Category) do
                     OffsetY = DrawOneLine(Key, Value, 20, ScreenPos.x + 24, ScreenPos.y, OffsetY)
                 end
                 OffsetY = OffsetY + 8
