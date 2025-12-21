@@ -38,22 +38,27 @@ if CLIENT then
         end
 
         for _, Piece in ipairs(Value) do
-            if Piece == "cpucl" then
+            if Piece == "cpucl" or Piece == "*" then
                 WatchCPU_CL = ACF_DevTools.PerfGraph()
                 WatchCPU_CL.Divisor = 1 / 1000
-            elseif Piece == "memcl" then
+            end
+            if Piece == "memcl" or Piece == "*" then
                 WatchGC_CL  = ACF_DevTools.PerfGraph()
                 WatchGC_CL.Divisor = 1024
-            elseif Piece == "cpusv" then
+            end
+            if Piece == "cpusv" or Piece == "*" then
                 WatchCPU_SV = ACF_DevTools.PerfGraph()
                 WatchCPU_SV.Divisor = 1 / 1000
-            elseif Piece == "memsv" then
+            end
+            if Piece == "memsv" or Piece == "*" then
                 WatchGC_SV  = ACF_DevTools.PerfGraph()
                 WatchGC_SV.Divisor = 1024
-            elseif Piece == "phycl" then
+            end
+            if Piece == "phycl" or Piece == "*" then
                 WatchPhys_CL  = ACF_DevTools.PerfGraph()
                 WatchPhys_CL.Divisor = 1 / 1000
-            elseif Piece == "physv" then
+            end
+            if Piece == "physv" or Piece == "*" then
                 WatchPhys_SV  = ACF_DevTools.PerfGraph()
                 WatchPhys_SV.Divisor = 1 / 1000
             end
