@@ -41,6 +41,10 @@ if CLIENT then
             local xPadding = 48
 
             local count, min, max, avg = self:Length(), self:Min(), self:Max(), self:Average()
+            -- Move min down just a litttle bit if its touching max
+            if math.abs(min - max) < 0.001 then
+                min = min - 0.01
+            end
             drawLine(x + xPadding, y + 4, x + xPadding, y + h - 4, 2, color_grey)
             drawLine(x + xPadding, y + h - 4, x + w - 4, y + h - 4, 2, color_grey)
             for i = 0, MAX_DEBUG_ITEMS - 1 do
