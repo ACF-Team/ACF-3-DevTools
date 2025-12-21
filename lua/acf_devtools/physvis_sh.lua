@@ -1,6 +1,8 @@
 if SERVER then ACF_PHYSICSVISTEST_LASTREQUESTEDENTS = ACF_PHYSICSVISTEST_LASTREQUESTEDENTS or {} end
 local RequestedEnts = SERVER and ACF_PHYSICSVISTEST_LASTREQUESTEDENTS or nil
 
+local EntityKeyValues = ACF_DevTools.EntityKeyValues
+
 local function ProcessLastTyped(Player, Request)
 	local LUT = {}
 	local Pieces = string.Split(Request, " ")
@@ -108,73 +110,53 @@ else
 			if not Valid then continue end
 
 			local LUT = {}
-			PhysData[net.ReadUInt(MAX_EDICT_BITS)] = LUT
+			local EntIdx = net.ReadUInt(MAX_EDICT_BITS)
 			local Objects = net.ReadUInt(6)
+
 			for PhysIdx = 1, Objects do
 				local ValidPhys = net.ReadBool()
-				local Obj = {
-					ValidPhys = ValidPhys,
-					Index = ValidPhys and net.ReadUInt(6),
-					Position = ValidPhys and net.ReadVector(),
-					Angles = ValidPhys and net.ReadAngle(),
-					Velocity = ValidPhys and net.ReadVector(),
-					AngularVelocity = ValidPhys and net.ReadVector(),
-					Mass = ValidPhys and net.ReadFloat(),
-					InternalStress = ValidPhys and net.ReadFloat(),
-					ExternalStress = ValidPhys and net.ReadFloat(),
-					Contents = ValidPhys and net.ReadUInt(32),
-					LinearDamping = ValidPhys and net.ReadFloat(),
-					AngularDamping = ValidPhys and net.ReadFloat(),
-					Energy = ValidPhys and net.ReadFloat(),
-					AngularInertia = ValidPhys and net.ReadVector(),
-					MassCenter = ValidPhys and net.ReadVector(),
-					Material = ValidPhys and net.ReadString(),
-					SpeedDamping = ValidPhys and net.ReadFloat(),
-					RotationDamping = ValidPhys and net.ReadFloat(),
-					ShadowPosition = ValidPhys and net.ReadVector(),
-					ShadowAngles = ValidPhys and net.ReadAngle(),
-					SurfaceArea = ValidPhys and net.ReadFloat(),
-					Volume = ValidPhys and net.ReadFloat(),
-				}
+				local PhysObjIdx = net.ReadUInt(6)
+				local Category = EntityKeyValues.GetPhysObjCategory(EntIdx, PhysObjIdx, "Physics Information").Data
+
+				Category.ValidPhys = ValidPhys
+				Category.Index = ValidPhys and PhysObjIdx
+				Category.Position = ValidPhys and net.ReadVector()
+				Category.Angles = ValidPhys and net.ReadAngle()
+				Category.Velocity = ValidPhys and net.ReadVector()
+				Category.AngularVelocity = ValidPhys and net.ReadVector()
+				Category.Mass = ValidPhys and net.ReadFloat()
+				Category.InternalStress = ValidPhys and net.ReadFloat()
+				Category.ExternalStress = ValidPhys and net.ReadFloat()
+				Category.Contents = ValidPhys and net.ReadUInt(32)
+				Category.LinearDamping = ValidPhys and net.ReadFloat()
+				Category.AngularDamping = ValidPhys and net.ReadFloat()
+				Category.Energy = ValidPhys and net.ReadFloat()
+				Category.AngularInertia = ValidPhys and net.ReadVector()
+				Category.MassCenter = ValidPhys and net.ReadVector()
+				Category.Material = ValidPhys and net.ReadString()
+				Category.SpeedDamping = ValidPhys and net.ReadFloat()
+				Category.RotationDamping = ValidPhys and net.ReadFloat()
+				Category.ShadowPosition = ValidPhys and net.ReadVector()
+				Category.ShadowAngles = ValidPhys and net.ReadAngle()
+				Category.SurfaceArea = ValidPhys and net.ReadFloat()
+				Category.Volume = ValidPhys and net.ReadFloat()
 
 				local Flags = ""
-				if ValidPhys and net.ReadBool() then Flags = Flags .. "asleep" end
-				if ValidPhys and net.ReadBool() then Flags = Flags .. " collisions" end
-				if ValidPhys and net.ReadBool() then Flags = Flags .. " drag" end
-				if ValidPhys and net.ReadBool() then Flags = Flags .. " gravity" end
-				if ValidPhys and net.ReadBool() then Flags = Flags .. " motion" end
-				if ValidPhys and net.ReadBool() then Flags = Flags .. " moveable" end
-				if ValidPhys and net.ReadBool() then Flags = Flags .. " penetrating" end
-				Obj.Flags = string.Trim(Flags)
+				if ValidPhys and net.ReadBool() then Flags = Flags .. "asleep " end
+				if ValidPhys and net.ReadBool() then Flags = Flags .. "collisions " end
+				if ValidPhys and net.ReadBool() then Flags = Flags .. "drag " end
+				if ValidPhys and net.ReadBool() then Flags = Flags .. "gravity " end
+				if ValidPhys and net.ReadBool() then Flags = Flags .. "motion " end
+				if ValidPhys and net.ReadBool() then Flags = Flags .. "moveable " end
+				if ValidPhys and net.ReadBool() then Flags = Flags .. "penetrating " end
+				Category.Flags = string.Trim(Flags)
 
-				LUT[PhysIdx] = Obj
+				LUT.Position = Category.Position
+				LUT.Velocity = Category.Velocity
 			end
+			PhysData[EntIdx] = LUT
 		end
 	end)
-
-	surface.CreateFont("ACF_DebugFixedLarge", {
-		font = "Consolas",
-		size = 18,
-		weight = 900
-	})
-
-	surface.CreateFont("ACF_DebugFixedSmall", {
-		font = "Consolas",
-		size = 13,
-		weight = 900
-	})
-
-	local function DrawOneLine(Key, Value, MaxKeyLen, X, Y, YOff)
-		local Text = Key .. string.rep(' ', math.max(MaxKeyLen - #Key, 0)) .. ": " .. tostring(Value)
-		surface.SetFont("ACF_DebugFixedSmall")
-		local W, H = surface.GetTextSize(Text)
-		X, Y = X, Y + 24 + (YOff * 13)
-		surface.SetDrawColor(0, 0, 0, 150)
-		local Pad = 2
-		surface.DrawRect(X - Pad, Y - (H / 2), W + (Pad * 2), H)
-		draw.SimpleTextOutlined(Text, "ACF_DebugFixedSmall", X, Y, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, color_black)
-		return YOff + 1
-	end
 
 	local BeamColor = Color(255, 61, 61)
 
@@ -184,42 +166,11 @@ else
 			if not IsValid(Ent) then continue end
 
 			for _, PhysObj in ipairs(EntPhys) do
+				if not PhysObj.Position or not PhysObj.Velocity then continue end
 				local Pos = Ent:LocalToWorld(PhysObj.Position)
 
 				render.SetColorMaterial()
 				ACF.DrawOutlineBeam(2, BeamColor, Pos, Pos + PhysObj.Velocity)
-			end
-		end
-	end)
-	local Collapsed = {}
-	local WasHeld
-	hook.Add("HUDPaint", "ACF_FunDebuggingFuncs_PhysVis", function()
-		local X, Y = input.GetCursorPos()
-		local Down = input.IsButtonDown(MOUSE_LEFT)
-		local Clicked = WasHeld == false and Down == true
-		WasHeld = Down
-		for EntIdx, EntPhys in pairs(PhysData) do
-			local Ent = Entity(EntIdx)
-			if not IsValid(Ent) then continue end
-
-			for _, PhysObj in ipairs(EntPhys) do
-				local IsCollapsed = Collapsed[EntIdx] and Collapsed[EntIdx][PhysObj.Index] == true
-				local Pos = Ent:LocalToWorld(PhysObj.Position)
-				local ScreenPos = Pos:ToScreen()
-				local W, H = draw.SimpleTextOutlined("[" .. (IsCollapsed and "+" or "-") .. "][Entity #" .. EntIdx .. "][PhysObj #" .. PhysObj.Index .. "]", "ACF_DebugFixedLarge", ScreenPos.x, ScreenPos.y, color_White, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, color_black)
-
-				if Clicked and X >= ScreenPos.x and X <= ScreenPos.x + W and Y >= (ScreenPos.y - (H / 2)) and Y <= (ScreenPos.y + H - (H / 2)) then
-					-- Collapse now
-					if not Collapsed[EntIdx] then Collapsed[EntIdx] = {} end
-					Collapsed[EntIdx][PhysObj.Index] = not Collapsed[EntIdx][PhysObj.Index]
-				end
-
-				local OffsetY = 0
-				if not IsCollapsed then
-					for Key, Value in SortedPairs(PhysObj) do
-						OffsetY = DrawOneLine(Key, Value, 20, ScreenPos.x, ScreenPos.y, OffsetY)
-					end
-				end
 			end
 		end
 	end)
