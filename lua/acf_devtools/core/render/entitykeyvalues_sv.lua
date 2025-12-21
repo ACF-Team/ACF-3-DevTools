@@ -31,8 +31,9 @@ end
 function EntityKeyValues.WritePhysObjKeyValue(PhysObj, CategoryName, Key, Value)
     return EntityKeyValues.WriteEntityIdxKeyValue(PhysObj:GetEntity():EntIndex(), PhysObj:GetIndex(), CategoryName, Key, Value)
 end
-
-EntityKeyValues.WriteEntityKeyValue(Entity(90), "Testing 123", "Thing", 4)
-EntityKeyValues.WriteEntityKeyValue(Entity(90), "ACF-3", "Hmmmmm", 4)
-EntityKeyValues.WriteEntityKeyValue(Entity(90), "Testing 123", "Thing", 4)
-EntityKeyValues.WriteEntityKeyValue(Entity(90), "Testing 123", "Thing 2", 4)
+--[[
+EntityKeyValues.WriteEntityKeyValue(Entity(95), "Testing 123", "Thing", 4)
+EntityKeyValues.WriteEntityKeyValue(Entity(95), "ACF-3", "Hmmmmm", 4)
+EntityKeyValues.WriteEntityKeyValue(Entity(95), "Testing 123", "Thing", 4)
+EntityKeyValues.WriteEntityKeyValue(Entity(95), "Testing 123", "Thing 2", 4)
+]]
