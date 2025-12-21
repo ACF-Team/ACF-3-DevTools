@@ -102,6 +102,14 @@ if SERVER then
 	hook.Add("Think", "ACF_FunDebuggingFuncs_PhysVis", DoPhysVis)
 else
 	local PhysData = {}
+	hook.Add("ACF_DevTools_QueryPhysObjLocalPosition", "PhysVisProvider", function(EntIdx, PhysIdx)
+		local Test = PhysData[EntIdx]
+		if Test then
+			Test = Test[PhysIdx]
+			if Test then return Test.Position end
+		end
+	end)
+
 	net.Receive("ACF_PhysVisData", function()
 		table.Empty(PhysData)
 		local Ents = net.ReadUInt(6)
@@ -116,8 +124,11 @@ else
 			for PhysIdx = 1, Objects do
 				local ValidPhys = net.ReadBool()
 				local PhysObjIdx = net.ReadUInt(6)
-				local Category = EntityKeyValues.GetPhysObjCategory(EntIdx, PhysObjIdx, "Physics Information").Data
-
+				local Category, ExistedBefore = EntityKeyValues.GetPhysObjCategory(EntIdx, PhysObjIdx, "Physics Information")
+				if not ExistedBefore then
+					Category.Collapsed = true
+				end
+				Category = Category.Data
 				Category.ValidPhys = ValidPhys
 				Category.Index = ValidPhys and PhysObjIdx
 				Category.Position = ValidPhys and net.ReadVector()
@@ -151,8 +162,8 @@ else
 				if ValidPhys and net.ReadBool() then Flags = Flags .. "penetrating " end
 				Category.Flags = string.Trim(Flags)
 
-				LUT.Position = Category.Position
-				LUT.Velocity = Category.Velocity
+				local Obj = {Position = Category.Position, Velocity = Category.Velocity}
+				LUT[PhysObjIdx] = Obj
 			end
 			PhysData[EntIdx] = LUT
 		end

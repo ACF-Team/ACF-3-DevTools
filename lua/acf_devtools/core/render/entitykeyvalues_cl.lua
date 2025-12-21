@@ -62,27 +62,29 @@ end
 function EntityKeyValues.GetEntityCategory(EntIdx, Name)
     local EntityData = EntityKeyValues.GetEntityData(EntIdx)
     local Category = EntityData.Categories[Name]
-    if not Category then
+    local Exists = Category ~= nil
+    if not Exists then
         Category = {
             Data = {}
         }
         EntityData.Categories[Name] = Category
     end
 
-    return Category
+    return Category, Exists
 end
 
 function EntityKeyValues.GetPhysObjCategory(EntIdx, PhysObjIdx, Name)
     local PhysObjData = EntityKeyValues.GetPhysObjData(EntIdx, PhysObjIdx)
     local Category    = PhysObjData.Categories[Name]
-    if not Category then
+    local Exists = Category ~= nil
+    if not Exists then
         Category = {
             Data = {}
         }
         PhysObjData.Categories[Name] = Category
     end
 
-    return Category
+    return Category, Exists
 end
 
 function EntityKeyValues.IterateEntities()
@@ -164,7 +166,14 @@ local function DrawOneLine(Key, Value, MaxKeyLen, X, Y, YOff)
 end
 
 local function RenderPhysObj(X, Y, Clicked, EntIdx, Ent, PhysObjIdx, PhysObjData)
-    local Pos = Ent:WorldSpaceCenter()
+    local Pos
+    local PhysObj = Ent:GetPhysicsObjectNum(PhysObjIdx)
+    if IsValid(PhysObj) then
+        Pos = PhysObj:GetPos()
+    else
+        --Some tools might have this real position. So try to get it there or just use the entity position as a last resort 
+        Pos = Ent:LocalToWorld(hook.Run("ACF_DevTools_QueryPhysObjLocalPosition", EntIdx, PhysObjIdx)) or Ent:WorldSpaceCenter()
+    end
     local ScreenPos = Pos:ToScreen()
 
     local IsEntityCollapsed = PhysObjData.Collapsed
