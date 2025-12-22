@@ -153,6 +153,12 @@ surface.CreateFont("ACF_DebugFixedSmall", {
     weight = 900
 })
 
+surface.CreateFont("ACF_DebugFixedSmall2", {
+    font = "Consolas",
+    size = 10,
+    weight = 900
+})
+
 local function DrawOneLine(Key, Value, MaxKeyLen, X, Y, YOff)
     local Text = Key .. string.rep(' ', math.max(MaxKeyLen - #Key, 0)) .. ": " .. tostring(Value)
     surface.SetFont("ACF_DebugFixedSmall")
@@ -211,7 +217,7 @@ local function RenderEntity(X, Y, Clicked, EntIdx, Ent, EntityData)
     local W, H = 0, 0
     if not EntityKeyValues.IsEntityEmpty(EntityData, false) then
         local IsEntityCollapsed = EntityData.Collapsed
-        W, H = draw.SimpleTextOutlined("[" .. (IsEntityCollapsed and "+" or "-") .. "][Entity #" .. EntIdx .. "]", "ACF_DebugFixedLarge", ScreenPos.x, ScreenPos.y, color_White, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, color_black)
+        W, H = draw.SimpleTextOutlined("[" .. (IsEntityCollapsed and "+" or "-") .. "][Entity #" .. EntIdx .. "]", IsEntityCollapsed and "ACF_DebugFixedSmall2" or "ACF_DebugFixedLarge", ScreenPos.x, ScreenPos.y, color_White, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, color_black)
         if Clicked and X >= ScreenPos.x and X <= ScreenPos.x + W and Y >= (ScreenPos.y - (H / 2)) and Y <= (ScreenPos.y + H - (H / 2)) then
             EntityData.Collapsed = not EntityData.Collapsed
         end
