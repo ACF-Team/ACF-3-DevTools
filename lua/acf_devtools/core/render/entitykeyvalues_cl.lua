@@ -217,7 +217,11 @@ local function RenderEntity(X, Y, Clicked, EntIdx, Ent, EntityData)
     local W, H = 0, 0
     if not EntityKeyValues.IsEntityEmpty(EntityData, false) then
         local IsEntityCollapsed = EntityData.Collapsed
-        W, H = draw.SimpleTextOutlined("[" .. (IsEntityCollapsed and "+" or "-") .. "][Entity #" .. EntIdx .. "]", IsEntityCollapsed and "ACF_DebugFixedSmall2" or "ACF_DebugFixedLarge", ScreenPos.x, ScreenPos.y, color_White, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, color_black)
+        if IsEntityCollapsed then
+            W, H = draw.SimpleTextOutlined("[-][" .. EntIdx .. "]", "ACF_DebugFixedSmall2", ScreenPos.x, ScreenPos.y, color_White, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, color_black)
+        else
+            W, H = draw.SimpleTextOutlined("[-][Entity #" .. EntIdx .. "]", "ACF_DebugFixedLarge", ScreenPos.x, ScreenPos.y, color_White, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, color_black)
+        end
         if Clicked and X >= ScreenPos.x and X <= ScreenPos.x + W and Y >= (ScreenPos.y - (H / 2)) and Y <= (ScreenPos.y + H - (H / 2)) then
             EntityData.Collapsed = not EntityData.Collapsed
         end
