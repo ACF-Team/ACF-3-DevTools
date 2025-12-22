@@ -2,9 +2,25 @@ util.AddNetworkString("ACF_DevTools_EntityKeyValue")
 
 local EntityKeyValues = ACF_DevTools.EntityKeyValues or {}
 ACF_DevTools.EntityKeyValues = EntityKeyValues
+local ReliabilityTracking_Ents = {}
+local ReliabilityTracking_Phys = {}
 
 function EntityKeyValues.WriteEntityIdxKeyValue(EntIdx, CategoryName, Key, Value)
-    net.Start("ACF_DevTools_EntityKeyValue")
+    local TrackReliability = ReliabilityTracking_Ents[EntIdx]
+    if not TrackReliability then
+        TrackReliability = 0
+        ReliabilityTracking_Ents[EntIdx] = 0
+    end
+
+    -- We'll send reliable messages every 0.5 seconds or so.
+    local Now = SysTime()
+    local IsReliable = (Now - TrackReliability) > 0.5
+    if IsReliable then
+        -- Set track reliability so we don't send reliable messages for this amount of time.
+        ReliabilityTracking_Ents[EntIdx] = Now
+    end
+
+    net.Start("ACF_DevTools_EntityKeyValue", not IsReliable)
     net.WriteUInt(0, 2) -- type
     net.WriteUInt(EntIdx, MAX_EDICT_BITS)
     net.WriteString(CategoryName)
@@ -14,7 +30,26 @@ function EntityKeyValues.WriteEntityIdxKeyValue(EntIdx, CategoryName, Key, Value
 end
 
 function EntityKeyValues.WritePhysObjIdxKeyValue(EntIdx, PhysObjIdx, CategoryName, Key, Value)
-    net.Start("ACF_DevTools_EntityKeyValue")
+    local TblTrackReliability = ReliabilityTracking_Ents[EntIdx]
+    if not TblTrackReliability then
+        TblTrackReliability = {}
+        ReliabilityTracking_Ents[EntIdx] = TblTrackReliability
+    end
+    local TrackReliability = TblTrackReliability[PhysObjIdx]
+    if not TrackReliability then
+        TrackReliability = 0
+        TblTrackReliability[PhysObjIdx] = 0
+    end
+
+    -- We'll send reliable messages every 0.5 seconds or so.
+    local Now = SysTime()
+    local IsReliable = (Now - TrackReliability) > 0.5
+    if IsReliable then
+        -- Set track reliability so we don't send reliable messages for this amount of time.
+        TblTrackReliability[PhysObjIdx] = Now
+    end
+
+    net.Start("ACF_DevTools_EntityKeyValue", not IsReliable)
     net.WriteUInt(1, 2) -- type
     net.WriteUInt(EntIdx, MAX_EDICT_BITS)
     net.WriteUInt(PhysObjIdx, 8)
