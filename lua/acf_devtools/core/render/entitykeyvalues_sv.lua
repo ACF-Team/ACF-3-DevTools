@@ -30,10 +30,10 @@ function EntityKeyValues.WriteEntityIdxKeyValue(EntIdx, CategoryName, Key, Value
 end
 
 function EntityKeyValues.WritePhysObjIdxKeyValue(EntIdx, PhysObjIdx, CategoryName, Key, Value)
-    local TblTrackReliability = ReliabilityTracking_Ents[EntIdx]
+    local TblTrackReliability = ReliabilityTracking_Phys[EntIdx]
     if not TblTrackReliability then
         TblTrackReliability = {}
-        ReliabilityTracking_Ents[EntIdx] = TblTrackReliability
+        ReliabilityTracking_Phys[EntIdx] = TblTrackReliability
     end
     local TrackReliability = TblTrackReliability[PhysObjIdx]
     if not TrackReliability then
