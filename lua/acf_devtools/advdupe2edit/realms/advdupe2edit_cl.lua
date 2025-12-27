@@ -101,6 +101,7 @@ StandardIcons.EntityMods           = "icon16/wrench.png"
 
 local function OpenDupe(Dupe, Info, MoreInfo)
     if not g_ContextMenu:IsVisible() then return false end
+    local SelectedEntityIdx = -1
 
     local Frame = vgui.Create("DFrame", g_ContextMenu)
     Frame:SetSize(1200, 720)
@@ -174,9 +175,26 @@ local function OpenDupe(Dupe, Info, MoreInfo)
     local ViewPanel = DataView:Add("DTree")
     DataView:AddSheet("Data View", ViewPanel, "icon16/database.png")
 
-    local EditorTools = SpecializedDataView:Add("DPanel")
+    local ToolBtnHeight = 32
+    local EditorTools = SpecializedDataView:Add("DScrollPanel")
     SpecializedDataView:AddSheet("Editor Tools", EditorTools, "icon16/table_edit.png")
-    local ChipTools = SpecializedDataView:Add("DPanel")
+    do
+        local EstimateSizeHelper = EditorTools:Add("DButton")
+        EstimateSizeHelper:SetSize(ToolBtnHeight, ToolBtnHeight)
+        EstimateSizeHelper:Dock(TOP)
+        EstimateSizeHelper:SetText("Estimate Size of Entity")
+        function EstimateSizeHelper:DoClick()
+            if SelectedEntityIdx == -1 then return end
+            -- Fake encode one entity for testing
+            local FakeEncode = {Entities = {[SelectedEntityIdx] = Dupe.Entities[SelectedEntityIdx]}, Constraints = {}, HeadEnt = Dupe.Entities[SelectedEntityIdx]}
+            AdvDupe2.Encode(FakeEncode, AdvDupe2.GenerateDupeStamp(LocalPlayer()), function(data)
+                local Size = #data
+                Derma_Message("The estimated size is " .. string.NiceSize(Size) .. ".")
+            end)
+        end
+    end
+
+    local ChipTools = SpecializedDataView:Add("DScrollPanel")
     SpecializedDataView:AddSheet("Chip Specific Tools", ChipTools, "icon16/script_edit.png")
 
     local ModelViewSheet = ModelView:Add("DPanel")
@@ -347,7 +365,6 @@ local function OpenDupe(Dupe, Info, MoreInfo)
         LoadNodes(EntityData.Class, ViewPanel, EntityData)
     end
 
-    SelectedEntityIdx = -1
     for EntityIdx, Data in pairs(Dupe.Entities) do
         local SelectEntButton = EntitiesPanel:Add("DButton")
         SelectEntButton:Dock(TOP)
