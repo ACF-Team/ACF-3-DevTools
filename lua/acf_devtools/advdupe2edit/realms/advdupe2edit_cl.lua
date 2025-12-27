@@ -108,6 +108,28 @@ local function OpenDupe(Dupe, Info, MoreInfo)
     Frame:SetTitle("Adv. Dupe 2 Viewer")
     Frame:SetSizable(true)
 
+    local SendBack = Frame:Add("DButton")
+    SendBack:Dock(BOTTOM)
+    SendBack:DockMargin(4, 4, 4, 4)
+    SendBack:SetSize(32, 32)
+    SendBack:SetText("Send to Server Clipboard")
+
+    function SendBack:DoClick()
+        local Notice = Derma_Message("Sending...", "Please wait", "Close Popup (does not cancel)")
+        local Tab = {Entities = Dupe.Entities, Constraints = Dupe.Constraints, HeadEnt = Dupe.HeadEnt}
+
+        AdvDupe2.Encode(Tab, AdvDupe2.GenerateDupeStamp(LocalPlayer()), function(data)
+            net.Start("AdvDupe2_ReceiveFile")
+            net.WriteString("reencoded")
+            net.WriteStream(data, function()
+                Notice:Remove()
+                notification.AddLegacy("OK!", NOTIFY_GENERIC, 5)
+            end)
+            AdvDupe2.Uploading = false
+            net.SendToServer()
+        end)
+    end
+
     local Internals = Frame:Add("DPanel")
     Internals:Dock(FILL)
 
@@ -259,18 +281,28 @@ local function OpenDupe(Dupe, Info, MoreInfo)
                     Text:Dock(RIGHT)
                     Text:DockMargin(4, 0, 4, 0)
                     Text:SetSize(200, 0)
+                    function Text:OnChange()
+                        Data[Key] = self:GetText()
+                    end
                 elseif t == "number" then
                     local Text = Node:Add("DNumberWang")
                     Text:SetValue(Value)
                     Text:Dock(RIGHT)
                     Text:DockMargin(4, 0, 4, 0)
                     Text:SetSize(200, 0)
+                    function Text:OnValueChanged(V)
+                        Data[Key] = V
+                    end
                 elseif t == "boolean" then
                     local Text = Node:Add("DCheckBox")
                     Text:SetChecked(Value)
                     Text:Dock(RIGHT)
                     Text:DockMargin(4, 1, 4, 1)
                     Text:SetSize(14, 0)
+
+                    function Text:OnChange(V)
+                        Data[Key] = V
+                    end
                 elseif t == "Vector" or t == "Angle" then
                     local X, Y, Z = Value:Unpack()
 
@@ -299,6 +331,10 @@ local function OpenDupe(Dupe, Info, MoreInfo)
                     Z_Slider:Dock(RIGHT)
                     Z_Slider:DockMargin(4, 0, 4, 0)
                     Z_Slider:SetSize((200 - 16) / 3, 0)
+
+                    function X_Slider:OnValueChanged(V) Value[1] = V end
+                    function Y_Slider:OnValueChanged(V) Value[2] = V end
+                    function Z_Slider:OnValueChanged(V) Value[3] = V end
                 end
             elseif Interpreter and Interpreter.SelfLoadContents then
                 Interpreter.SelfLoadContents(Node, Key, Value)
