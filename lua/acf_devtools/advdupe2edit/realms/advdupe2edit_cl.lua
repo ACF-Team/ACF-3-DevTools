@@ -216,6 +216,14 @@ local function OpenDupe(Dupe, Info, MoreInfo)
             self:GetSkin().tex.Button(0, 0, width, height, DrawColor)
         end
     end
+    local TypeIcons = {
+        number = "icon16/text_list_numbers.png",
+        string = "icon16/text_signature.png",
+        boolean = "icon16/accept.png",
+        table = "icon16/table.png",
+        Vector = "icon16/map_go.png",
+        Angle = "icon16/arrow_rotate_anticlockwise.png",
+    }
     function LoadNodes(Class, Parent, Data, Last)
         if not IsValid(Parent) then return end
 
@@ -225,11 +233,11 @@ local function OpenDupe(Dupe, Info, MoreInfo)
                 Interpreter = Modifiers[Key] or Classes[Key]
             end
 
-            local Node = Parent:AddNode(Key, Interpreter and Interpreter.Icon or StandardIcons[Key] or "icon16/bullet_black.png")
+            local t = type(Value)
+            local Node = Parent:AddNode(Key, Interpreter and Interpreter.Icon or StandardIcons[Key] or TypeIcons[t] or "icon16/bullet_black.png")
             Node:DockMargin(0, 2, 0, 2)
 
             if not Interpreter or not Interpreter.SelfLoadContents then
-                local t = type(Value)
                 if t == "table" then
                     if next(Value) then
                         Node.Expander:SetVisible(true)
