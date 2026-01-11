@@ -264,6 +264,23 @@ local function OpenDupe(Dupe, Info, MoreInfo)
         Vector = "icon16/map_go.png",
         Angle = "icon16/arrow_rotate_anticlockwise.png",
     }
+
+    local function CreateInputPanel(Parent, Insides)
+        local Panel = Parent:Add("DPanel")
+        Panel:SetPaintBackground(false)
+        Panel:DockMargin(4, 0, 4, 0)
+        Panel:SetSize(200, 0)
+        Panel:Dock(RIGHT)
+
+        local Element
+        if Insides then
+            Element = Panel:Add(Insides)
+            Element:Dock(FILL)
+        end
+
+        return Panel, Element
+    end
+
     function LoadNodes(Class, Parent, Data, Last)
         if not IsValid(Parent) then return end
 
@@ -293,29 +310,46 @@ local function OpenDupe(Dupe, Info, MoreInfo)
                     end
                     Node.Expander.DoClick = function() Node:DoClick() end
 
-                elseif t == "string" then
-                    local Text = Node:Add("DTextEntry")
-                    Text:SetText(Value)
-                    Text:Dock(RIGHT)
-                    Text:DockMargin(4, 0, 4, 0)
-                    Text:SetSize(200, 0)
-                    function Text:OnChange()
-                        Data[Key] = self:GetText()
-                    end
-                elseif t == "number" then
-                    local Text = Node:Add("DNumberWang")
+                elseif t == "number" or tonumber(Value) ~= nil then
+                    local Inner, Text = CreateInputPanel(Node, "DNumberWang")
                     Text:SetValue(Value)
-                    Text:Dock(RIGHT)
-                    Text:DockMargin(4, 0, 4, 0)
-                    Text:SetSize(200, 0)
+
+                    local PutNaN = Inner:Add("DButton")
+                    local PutInf = Inner:Add("DButton")
+                    PutNaN:Dock(RIGHT)
+                    PutNaN:SetSize(28, 0)
+                    PutNaN:SetText("NaN")
+
+                    PutInf:Dock(RIGHT)
+                    PutInf:SetSize(28, 0)
+                    PutInf:SetText("Inf")
+
+                    function PutNaN:DoClick()
+                        Text:SetText("nan")
+                        Data[Key] = 0 / 0
+                    end
+
+                    function PutInf:DoClick()
+                        Text:SetText("inf")
+                        Data[Key] = 1 / 0
+                    end
+
+                    Text:MoveToFront()
                     function Text:OnValueChanged(V)
                         Data[Key] = V
                     end
+                elseif t == "string" then
+                    local _, Text = CreateInputPanel(Node, "DTextEntry")
+                    Text:SetText(Value)
+
+                    function Text:OnChange()
+                        Data[Key] = self:GetText()
+                    end
                 elseif t == "boolean" then
-                    local Text = Node:Add("DCheckBox")
+                    local _, Text = CreateInputPanel(Node, "DCheckBox")
                     Text:SetChecked(Value)
                     Text:Dock(RIGHT)
-                    Text:DockMargin(4, 1, 4, 1)
+                    Text:DockMargin(0, 1, 0, 1)
                     Text:SetSize(14, 0)
 
                     function Text:OnChange(V)
@@ -324,9 +358,25 @@ local function OpenDupe(Dupe, Info, MoreInfo)
                 elseif t == "Vector" or t == "Angle" then
                     local X, Y, Z = Value:Unpack()
 
-                    local Z_Slider = Node:Add("DNumberWang")
-                    local Y_Slider = Node:Add("DNumberWang")
-                    local X_Slider = Node:Add("DNumberWang")
+                    local Inner, _ = CreateInputPanel(Node)
+                    local Z_Slider = Inner:Add("DNumberWang")
+                    local Y_Slider = Inner:Add("DNumberWang")
+                    local X_Slider = Inner:Add("DNumberWang")
+
+                    local HPadding = 4
+                    local VPadding = 1
+                    function Inner:PerformLayout(W, H)
+                        local WidthPer  = (W / 3)
+                        local HeightPer = H - (VPadding * 2)
+                        X_Slider:SetPos(0, VPadding)
+                        X_Slider:SetSize(WidthPer, HeightPer)
+
+                        Y_Slider:SetPos(WidthPer, VPadding)
+                        Y_Slider:SetSize(WidthPer, HeightPer)
+
+                        Z_Slider:SetPos(WidthPer * 2, VPadding)
+                        Z_Slider:SetSize(WidthPer, HeightPer)
+                    end
 
                     X_Slider:SetPaintBackground(false)
                     Y_Slider:SetPaintBackground(false)
@@ -336,19 +386,8 @@ local function OpenDupe(Dupe, Info, MoreInfo)
                     Z_Slider.Paint = ProduceSimpleBGPaint(B_COLOR, B_BORDER_COLOR)
 
                     X_Slider:SetValue(X)
-                    X_Slider:Dock(RIGHT)
-                    X_Slider:DockMargin(4, 0, 4, 0)
-                    X_Slider:SetSize((200 - 16) / 3, 0)
-
                     Y_Slider:SetValue(Y)
-                    Y_Slider:Dock(RIGHT)
-                    Y_Slider:DockMargin(4, 0, 4, 0)
-                    Y_Slider:SetSize((200 - 16) / 3, 0)
-
                     Z_Slider:SetValue(Z)
-                    Z_Slider:Dock(RIGHT)
-                    Z_Slider:DockMargin(4, 0, 4, 0)
-                    Z_Slider:SetSize((200 - 16) / 3, 0)
 
                     function X_Slider:OnValueChanged(V) Value[1] = V end
                     function Y_Slider:OnValueChanged(V) Value[2] = V end
