@@ -312,6 +312,8 @@ local function OpenDupe(Dupe, Info, MoreInfo)
 
                 elseif t == "number" or tonumber(Value) ~= nil then
                     local Inner, Text = CreateInputPanel(Node, "DNumberWang")
+                    Text:SetMin(-math.huge)
+                    Text:SetMax(math.huge)
                     Text:SetValue(Value)
 
                     local PutNaN = Inner:Add("DButton")
@@ -362,6 +364,9 @@ local function OpenDupe(Dupe, Info, MoreInfo)
                     local Z_Slider = Inner:Add("DNumberWang")
                     local Y_Slider = Inner:Add("DNumberWang")
                     local X_Slider = Inner:Add("DNumberWang")
+                    X_Slider:SetMin(-math.huge) X_Slider:SetMax(math.huge)
+                    Y_Slider:SetMin(-math.huge) Y_Slider:SetMax(math.huge)
+                    Z_Slider:SetMin(-math.huge) Z_Slider:SetMax(math.huge)
 
                     local HPadding = 4
                     local VPadding = 1
