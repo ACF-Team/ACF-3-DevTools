@@ -181,9 +181,55 @@ if CLIENT then
         local Menu = vgui.Create("DFrame")
         Menu:SetTitle("Event Viewer")
         Menu:SetSize(760, 760)
+        Menu:SetMouseInputEnabled(true)
+        Menu:SetKeyboardInputEnabled(true)
         Menu:MakePopup()
         Menu:Center()
+        Menu:SetSizable(true)
         Menu:DockPadding(8, 32, 8, 8)
+
+        Menu.btnMinim:SetVisible(true)
+        Menu.btnMinim:SetEnabled(true)
+
+        -- This sucks but I am lazy right now :(
+        local BringMeBackButton
+
+        local function Menu_btnMaxim_DoClick()
+            if not IsValid(BringMeBackButton) then return end
+            Menu.btnMaxim:SetEnabled(false)
+            Menu.btnMinim:SetEnabled(true)
+            Menu:SetMouseInputEnabled(true)
+            Menu:SetKeyboardInputEnabled(true)
+            if IsValid(BringMeBackButton) then
+                hook.Remove("Think", BringMeBackButton)
+                BringMeBackButton:Remove()
+                BringMeBackButton = nil
+            end
+        end
+
+        function Menu.btnMinim:DoClick()
+            self:SetEnabled(false)
+            Menu.btnMaxim:SetEnabled(true)
+            Menu:SetMouseInputEnabled(false)
+            Menu:SetKeyboardInputEnabled(false)
+            BringMeBackButton = vgui.Create("DButton")
+            BringMeBackButton.Paint = function() end
+            BringMeBackButton.DoClick = Menu_btnMaxim_DoClick
+            BringMeBackButton:SetText("")
+            hook.Add("Think", BringMeBackButton, function()
+                if not IsValid(Menu) then
+                    hook.Remove("Think", BringMeBackButton)
+                    BringMeBackButton:Remove()
+                    BringMeBackButton = nil
+                    return
+                end
+
+                local GlobalX, GlobalY = Menu.btnMaxim:LocalToScreen(0, 0)
+                local Width, Height = Menu.btnMaxim:GetSize()
+                BringMeBackButton:SetPos(GlobalX, GlobalY)
+                BringMeBackButton:SetSize(Width, Height)
+            end)
+        end
 
         local Clear = Menu:Add("DButton")
         Clear:SetConsoleCommand("acf_eventviewer_clear")
