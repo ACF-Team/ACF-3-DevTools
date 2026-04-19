@@ -5,6 +5,7 @@ local acf_eventviewer_enable = CreateConVar("acf_eventviewer_enable", "0", FCVAR
 local EnableEventViewer = acf_eventviewer_enable:GetBool()
 cvars.AddChangeCallback("acf_eventviewer_enable", function(_, _, _)
     EnableEventViewer = acf_eventviewer_enable:GetBool()
+    hook.Run("ACF3_DevTools_EnableChanged", EnableEventViewer)
 end, "ACF_CheckEvents")
 
 function EventViewer.Enabled() return EnableEventViewer end
