@@ -1,6 +1,7 @@
 if SERVER then ACF_PHYSICSVISTEST_LASTREQUESTEDENTS = ACF_PHYSICSVISTEST_LASTREQUESTEDENTS or {} end
 local RequestedEnts = SERVER and ACF_PHYSICSVISTEST_LASTREQUESTEDENTS or nil
 
+if not ACF_DevTools.EntityKeyValues then ACF_DevTools.EntityKeyValues = {} end
 local EntityKeyValues = ACF_DevTools.EntityKeyValues
 
 local function ProcessLastTyped(Player, Request)
