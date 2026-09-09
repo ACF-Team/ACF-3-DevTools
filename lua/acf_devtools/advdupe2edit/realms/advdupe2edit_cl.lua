@@ -421,6 +421,19 @@ local function OpenDupe(Dupe, Info, MoreInfo)
             LoadEntity(EntityIdx, Data)
             SelectedEntityIdx = EntityIdx
         end
+        function SelectEntButton:DoRightClick()
+            local Menu = DermaMenu()
+            Menu:AddOption("Delete This Entity", function()
+                SelectEntButton:Remove()
+                Dupe.Entities[EntityIdx] = nil
+                if Dupe.HeadEnt.Index == EntityIdx then
+                    -- New HeadEnt
+                    -- todo: review pos/z changes that should happen?
+                    Dupe.HeadEnt.Index = next(Dupe.Entities)
+                end
+            end)
+            Menu:Open()
+        end
     end
 
     return true
