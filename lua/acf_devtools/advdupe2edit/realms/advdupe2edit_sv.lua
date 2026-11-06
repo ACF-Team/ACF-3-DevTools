@@ -22,7 +22,7 @@ concommand.Add("start_advdupe2_download", function(ply)
 
     AdvDupe2.Encode(Tab, AdvDupe2.GenerateDupeStamp(ply), function(data)
         net.Start("ACF_Devtools_Advdupe2Download")
-        net.WriteBool(autosave)
+        net.WriteBool(false)
         net.WriteStream(data, function()
 
         end)
